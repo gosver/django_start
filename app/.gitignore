@@ -1,0 +1,10 @@
+__pycache__
+db.sqlite3
+/venv
+/env
+.env
+.env.dev
+local_settings.py
+/.idea
+z_err_django.log
+z_err_my.log

@@ -1,0 +1,65 @@
+version: '3.7'
+
+services:
+  mysql:
+    image: mysql:8.0
+    restart: always
+    volumes:
+      - ./db/db_prod:/var/lib/mysql
+    environment:
+      MYSQL_DATABASE: black_financier
+      MYSQL_ROOT_PASSWORD: root
+    ports:
+      - "8101:3306"
+    command: mysqld --character-set-server=utf8 --collation-server=utf8_unicode_ci
+    container_name: bf_mysql
+  redis:
+    container_name: bf_redis
+    build:
+      context: .
+      dockerfile: ./redis/Dockerfile
+    environment:
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    ports:
+      - 6379:6379
+  django-gunicorn:
+    build:
+      context: ./
+      dockerfile: ./back/Dockerfile.prod
+    expose:
+      - 8000
+    volumes:
+      - ./back/financier_web_main/static:/usr/src/app/financier_web_main/static
+    env_file:
+      - ./.env.prod
+    depends_on:
+      - mysql
+      - redis
+    container_name: bf_django_gunicorn_daphnie
+  nginx_react:
+    build:
+      context: .
+      dockerfile: ./front/Dockerfile.react.prod
+    volumes:
+      - './front:/app'
+      - './back/financier_web_main/static:/static'
+    ports:
+      - "80:80"
+      - "8000:8000"
+      - "8001:8001"
+    container_name: bf_nginx_react
+    depends_on:
+      - django-gunicorn
+  telegram:
+    build:
+      context: ./
+      dockerfile: ./back/Dockerfile_telegram
+    command: python ./financier_telegrambot/__main__.py
+    volumes:
+      - ./back:/usr/src/app/
+    depends_on:
+      - django-gunicorn
+    env_file:
+      - ./.env.prod
+    container_name: bf_telegram

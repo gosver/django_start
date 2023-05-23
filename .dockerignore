@@ -1,0 +1,20 @@
+# settings
+**/localSettings.js
+**/local_settings.py
+
+#node
+**/dist
+.git
+npm-debug.log
+.coverage
+.coverage.*
+.env
+.aws
+
+#python
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.Python
+.cache
